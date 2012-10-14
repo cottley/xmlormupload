@@ -113,11 +113,11 @@
     </target>
 
     <target name="run.xmlormupload" depends="build" description="Run a One-Jar xmlormupload">
-        <java fork="true" jar="build/xmlormupload.jar"/>
+        <java fork="true" jar="build/xmlormupload.jar" dir="build"/>
     </target>
 
 	<target name="test.xmlormupload" depends="build" description="Stand-alone test a One-Jar xmlormupload">
-        <java fork="true" jar="build/test-xmlormupload.jar"/>
+        <java fork="true" jar="build/test-xmlormupload.jar" dir="build"/>
     </target>
 	
 </project>

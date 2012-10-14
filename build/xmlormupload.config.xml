@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<config>
+  <source>
+    <path>../test-data/data-loader/input</path>
+    <extensions>xml</extensions>
+  </source>
+  <domainclasses>
+    <path>domain-classes</path>
+    <extensions>groovy</extensions>
+  </domainclasses>
+  <threadpool><size>5</size></threadpool>
+  <database>
+
+  </database>
+</config>
