@@ -27,6 +27,9 @@ import java.util.Iterator;
 
 import java.util.List;
 
+import groovy.lang.GroovyClassLoader;
+import java.io.IOException;
+
 public class XmlormuploadMain {
 
     private static final Logger log = Logger.getLogger( XmlormuploadMain.class );
@@ -47,15 +50,34 @@ public class XmlormuploadMain {
         String sourceDir = config.getString("source.path");
         List allowedExtensions = config.getList("source.extensions");
         int poolSize = config.getInt("threadpool.size");
+
+        String groovySourceDir = config.getString("domainclasses.path");
+        List groovyAllowedExtensions = config.getList("domainclasses.extensions");
+
+        
+        if (isDebugging) { log.debug("Loaded configuration successfully. Reading groovy class list from: " + groovySourceDir + " with allowed extensions " + groovyAllowedExtensions); }
+        Iterator groovyIter =  FileUtils.iterateFiles(new File(groovySourceDir), (String[])groovyAllowedExtensions.toArray(new String[groovyAllowedExtensions.size()]), true);
+        
         if (isDebugging) { log.debug("Loaded configuration successfully. Reading file list from: " + sourceDir + " with allowed extensions " + allowedExtensions); }
         Iterator iter =  FileUtils.iterateFiles(new File(sourceDir), (String[])allowedExtensions.toArray(new String[allowedExtensions.size()]), true);
         if (poolSize < 1) { poolSize = 5; }
-
+        
         exec = Executors.newFixedThreadPool(poolSize);
+
+                
+        GroovyClassLoader gcl = new GroovyClassLoader();
+        while (groovyIter.hasNext()) {
+          File groovyFile = (File) groovyIter.next();
+          try {
+            Class clazz = gcl.parseClass(groovyFile);
+          } catch (IOException ioe) {
+            log.error("Unable to read file " + groovyFile + " to parse class ", ioe);
+          }
+        }
         
         while(iter.hasNext()) {
           File file = (File) iter.next();
-          exec.execute(new Xmlormuploader(file, config));
+          exec.execute(new Xmlormuploader(file, config, gcl));
         }
         
         exec.shutdown();
