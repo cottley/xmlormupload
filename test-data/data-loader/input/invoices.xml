@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 <list>
-<invoice>
+<Invoice>
   <meta>
     <sourcefilename>/home/cottley/Development/xls2xml/test-data/data-loader/input/invoices.xlsx</sourcefilename>
     <sheetno>0</sheetno>
@@ -13,18 +13,18 @@
     <contact>Phone: (800) 123-4567   email:info@invoice.com</contact>
     <website>http://invoice.com</website>
   </invoicecompany>
-  <invoicebillto>
+  <invoicebilledto>
     <name>John Smith</name>
     <addressline1>#4 Some place</addressline1>
     <addressline2>Some city</addressline2>
     <addressline3>Some country</addressline3>    
-  </invoicebillto>
-  <invoiceserviceto>
+  </invoicebilledto>
+  <invoiceservicedto>
     <name>Jane Smith</name>
     <addressline1>#4 Some place</addressline1>
     <addressline2>Some city</addressline2>
     <addressline3>Some country</addressline3>    
-  </invoiceserviceto>
+  </invoiceservicedto>
   <ponumber>12345.0</ponumber>
   <salesrep>Some guy</salesrep>
   <servicedate>2012-10-13 12:00:00 AM</servicedate>
@@ -48,5 +48,5 @@
   <total>57.0</total>
   <paid>0.0</paid>
   <totaldue>57.0</totaldue>
-</invoice>
+</Invoice>
 </list>

@@ -35,19 +35,19 @@
 	</target>
 
 	<target name="compile" depends="mkdirs">
-        <javac destdir="classes/src" includes="**/*.java" debug="true">
+        <javac destdir="classes/src" includes="**/*.java" debug="true" includeantruntime="false">
             <src path="src" />
             <classpath refid="libraries" />
             <classpath refid="one-jar.libraries"/>
             <classpath path="${one-jar.ant.jar}"/>
         </javac>
-        <javac destdir="classes/test" includes="**/*.java" debug="true">
+        <javac destdir="classes/test" includes="**/*.java" debug="true" includeantruntime="false">
             <src path="test" />
             <classpath refid="libraries" />
             <classpath refid="one-jar.libraries"/>
             <classpath path="${one-jar.ant.jar}"/>
         </javac>
-        <javac destdir="classes/junit" includes="**/*.java" debug="true">
+        <javac destdir="classes/junit" includes="**/*.java" debug="true" includeantruntime="false">
             <src path="junit" />
             <classpath refid="libraries" />
             <classpath refid="one-jar.libraries"/>
@@ -62,6 +62,7 @@
 		<one-jar destfile="build/xmlormupload.jar">
             <manifest>
                 <attribute name="Main-Class" value="com.referencelogic.xmlormupload.Boot"/>
+                <attribute name="One-Jar-Allow-Classloaders" value="groovy.lang.GroovyClassLoader"/>
                 <attribute name="One-Jar-Main-Class" value="com.referencelogic.xmlormupload.main.XmlormuploadMain"/>
             </manifest>
             <main>
@@ -74,7 +75,8 @@
 		<one-jar destfile="build/test-xmlormupload.jar">
             <manifest>
                 <attribute name="Main-Class" value="com.referencelogic.xmlormupload.Boot"/>
-            	<attribute name="One-Jar-Main-Class" value="com.referencelogic.xmlormupload.test.Test"/>
+                <attribute name="One-Jar-Allow-Classloaders" value="groovy.lang.GroovyClassLoader"/>
+              	<attribute name="One-Jar-Main-Class" value="com.referencelogic.xmlormupload.test.Test"/>
             </manifest>
             <zipfileset src="${one-jar.ant.jar}" includes="**/Testable.class"/>
 			<main>

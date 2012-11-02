@@ -2,29 +2,35 @@ import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
 import javax.persistence.GenerationType
+import javax.persistence.CascadeType
 import groovy.transform.ToString
 import groovy.transform.EqualsAndHashCode
 import javax.persistence.Table
 import javax.persistence.Column
+import javax.persistence.OneToOne
+import javax.persistence.OneToMany
+import javax.persistence.PrimaryKeyJoinColumn
+import javax.persistence.JoinColumn
+import javax.persistence.ManyToOne
+import javax.persistence.JoinTable
+
+import org.hibernate.annotations.IndexColumn
 
 @ToString
 @EqualsAndHashCode
 @Entity
 @Table(name="invoice")
-class invoice {
+class Invoice {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
+  @Column(name="invoiceId")
   Long id
 
-  Meta meta
+ 	@OneToOne(cascade=CascadeType.ALL)
+  InvoiceMeta meta
 
   String invoicedate
   String invoicenumber
-
-  Invoicecompany invoicecompany  
- 
-  Invoicebillto invoicebillto
-  Invoicebillto invoiceserviceto
  
   String ponumber
   String salesrep
@@ -32,8 +38,20 @@ class invoice {
   String terms
   String duedate
 
-  List productdetails
+ 	@OneToOne(cascade=CascadeType.ALL)
+  Invoicecompany invoicecompany  
+ 
+ 	@OneToOne(cascade=CascadeType.ALL)
+  Invoicebillto invoicebilledto
   
+	@OneToOne(cascade=CascadeType.ALL)
+  Invoicebillto invoiceservicedto
+
+
+  @JoinTable(name = "Invoice_for_ProductDetail")
+  @OneToMany(cascade=CascadeType.ALL)
+  List<productdetail> productdetails
+
   String notes
   String subtotal
   String discountpercent
@@ -41,10 +59,14 @@ class invoice {
   String total
   String paid
   String totaldue
-  
+ 
 }
 
-class Meta {
+@Entity
+@ToString
+@EqualsAndHashCode
+@Table(name="invoice_meta")
+class InvoiceMeta {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   Long id
@@ -53,6 +75,10 @@ class Meta {
   String sheetno
 }
 
+@Entity
+@ToString
+@EqualsAndHashCode
+@Table(name="invoice_company")
 class Invoicecompany {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -64,6 +90,10 @@ class Invoicecompany {
   String website
 }
 
+@Entity
+@ToString
+@EqualsAndHashCode
+@Table(name="invoice_billto")
 class Invoicebillto {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
@@ -73,13 +103,20 @@ class Invoicebillto {
   String addressline1
   String addressline2
   String addressline3
+
 }
 
+@Entity
+@ToString
+@EqualsAndHashCode
+@Table(name="invoice_productdetail")
 class productdetail {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
+  @Column(name = "productdetailId")
   Long id
   
   String productid
   String productdesc
+
 }

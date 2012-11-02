@@ -17,6 +17,7 @@ import java.io.File;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 
@@ -29,6 +30,18 @@ import java.util.List;
 
 import groovy.lang.GroovyClassLoader;
 import java.io.IOException;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
+import java.util.Properties;
+
+import org.hibernate.service.classloading.spi.ClassLoaderService;
+
+import org.hibernate.service.BootstrapServiceRegistryBuilder;
+import org.hibernate.service.BootstrapServiceRegistry;
+
 
 public class XmlormuploadMain {
 
@@ -56,36 +69,65 @@ public class XmlormuploadMain {
 
         
         if (isDebugging) { log.debug("Loaded configuration successfully. Reading groovy class list from: " + groovySourceDir + " with allowed extensions " + groovyAllowedExtensions); }
-        Iterator groovyIter =  FileUtils.iterateFiles(new File(groovySourceDir), (String[])groovyAllowedExtensions.toArray(new String[groovyAllowedExtensions.size()]), true);
         
         if (isDebugging) { log.debug("Loaded configuration successfully. Reading file list from: " + sourceDir + " with allowed extensions " + allowedExtensions); }
         Iterator iter =  FileUtils.iterateFiles(new File(sourceDir), (String[])allowedExtensions.toArray(new String[allowedExtensions.size()]), true);
         if (poolSize < 1) { poolSize = 5; }
         
         exec = Executors.newFixedThreadPool(poolSize);
-
                 
         GroovyClassLoader gcl = new GroovyClassLoader();
-        while (groovyIter.hasNext()) {
-          File groovyFile = (File) groovyIter.next();
-          try {
-            Class clazz = gcl.parseClass(groovyFile);
-          } catch (IOException ioe) {
-            log.error("Unable to read file " + groovyFile + " to parse class ", ioe);
+
+        ClassLoader ojcl = Thread.currentThread().getContextClassLoader();
+        
+        boolean allFilesResolved = false;
+        while (!allFilesResolved) {
+          Iterator groovyIter =  FileUtils.iterateFiles(new File(groovySourceDir), (String[])groovyAllowedExtensions.toArray(new String[groovyAllowedExtensions.size()]), true);
+        
+          allFilesResolved = true;
+        
+          while (groovyIter.hasNext()) {
+            File groovyFile = (File) groovyIter.next();
+            log.info("Trying to parse file " + groovyFile);
+            try {
+              Class clazz = gcl.parseClass(groovyFile);
+            } catch (IOException ioe) {
+              log.error("Unable to read file " + groovyFile + " to parse class ", ioe);
+            } catch (Exception e) {
+              log.error("Unable to parse file " + groovyFile + " ex:" + e);
+              allFilesResolved = false;
+            }
           }
+          
         }
+                                
+        Thread.currentThread().setContextClassLoader(gcl);
+        
+        Configuration hibernateConfig = new Configuration();
+        
+        SessionFactory sf = hibernateConfig.configure(new File("hibernate.config.xml")).buildSessionFactory();        
+
+        log.info("Opened session");
         
         while(iter.hasNext()) {
           File file = (File) iter.next();
-          exec.execute(new Xmlormuploader(file, config, gcl));
+          exec.execute(new Xmlormuploader(file, config, gcl, sf));
         }
         
         exec.shutdown();
+        try {
+          while(!exec.isTerminated()) {
+            exec.awaitTermination(30, TimeUnit.SECONDS); 
+          }
+        } catch (InterruptedException ie) {
+          // Do nothing, going to close database connection anyway        
+        }
+       
+        sf.close();
 
       } catch(ConfigurationException cex) {
         log.fatal("Unable to load config file " + configFileName + " to determine configuration.", cex);
       } 
     }
     
-
 }

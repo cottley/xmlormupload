@@ -9,7 +9,4 @@
     <extensions>groovy</extensions>
   </domainclasses>
   <threadpool><size>5</size></threadpool>
-  <database>
-
-  </database>
 </config>
