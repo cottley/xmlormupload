@@ -15,6 +15,8 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
+import com.thoughtworks.xstream.mapper.MapperWrapper;
+
 public class Xmlormuploader implements Runnable {
 
   protected File file;
@@ -42,27 +44,43 @@ public class Xmlormuploader implements Runnable {
       XStream xstream = new XStream();
       xstream.setClassLoader(gcl); 
       
-      // Read the file and get objects
-      Object deserialized = xstream.fromXML(file);
+      try {
+        if (file.length() > 0) {
+          // Read the file and get objects
+          Object deserialized = xstream.fromXML(file);
             
-      Session sess = sf.openSession();
-      Transaction t = sess.beginTransaction();
+          Session sess = sf.openSession();
+          Transaction t = sess.beginTransaction();
        
-      if (deserialized instanceof ArrayList) {
-        log.debug("Deserialized object is an ArrayList");
-        ArrayList ar = (ArrayList)deserialized;
-        for (Object o : ar) {
-          // Serialize
-          sess.save(o);
-        }
-      } else {
-        // Serialize
-        sess.save(deserialized);
-      }
+          if (deserialized instanceof ArrayList) {
+            log.debug("Deserialized object is an ArrayList");
+            ArrayList ar = (ArrayList)deserialized;
+            for (Object o : ar) {
+              // Serialize
+              try {
+                sess.save(o);
+              } catch (Exception e) {
+                log.error("Unable to save deserialized object.", e);
+              }
+            }
+          } else {
+            // Serialize
+            try {
+              sess.save(deserialized);
+            } catch (Exception e) {
+              log.error("Unable to save deserialized object.", e);
+            }
+          }
       
-      sess.flush();
-      t.commit();
-      sess.close();
+          sess.flush();
+          t.commit();
+          sess.close();
+        } else {
+          log.warn("File at " + sourceFilePath + " contains no data, ignored.");
+        }
+      } catch (Exception ex) {
+        log.error("Could not deserialize " + sourceFilePath, ex);
+      }
       
   }
 
