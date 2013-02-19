@@ -57,6 +57,8 @@ public class XmlormuploadMain {
         isDebugging = log.isDebugEnabled();
         for (String s : args)
         {
+          log.debug("Processing parameter: " + s);
+          
           if (matchRegex && matchRegexStr.equals("")) {
             matchRegexStr = s;
             log.debug("Set regex string to: " + matchRegexStr);
@@ -131,7 +133,9 @@ public class XmlormuploadMain {
             log.debug("Canonical path being processed is: " + filePath);
           } catch (IOException ioe) {
             log.warn("Unable to get canonical path from file", ioe);
-          }          
+          }
+          log.debug("Is matchRegex true? " + matchRegex);
+          log.debug("Does filePath match regexStr?" + filePath.matches(matchRegexStr));
           if ((!matchRegex) || (matchRegex && filePath.matches(matchRegexStr))) {
             exec.execute(new Xmlormuploader(file, config, gcl, sf));
           }
