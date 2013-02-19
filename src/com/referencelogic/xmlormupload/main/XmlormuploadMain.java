@@ -49,10 +49,24 @@ public class XmlormuploadMain {
     private static boolean isDebugging;
     private static final String configFileName = "xmlormupload.config.xml";
     private ExecutorService exec;
+    private static boolean matchRegex = false;
+    private static String matchRegexStr = "";
     
     public static void main(String args[]) {
         PropertyConfigurator.configure("log4j.properties");
-         isDebugging = log.isDebugEnabled();
+        isDebugging = log.isDebugEnabled();
+        for (String s : args)
+        {
+          if (matchRegex && matchRegexStr.equals("")) {
+            matchRegexStr = s;
+            log.debug("Set regex string to: " + matchRegexStr);
+          }
+        
+          if (s.equalsIgnoreCase("--restrict")) {
+            matchRegex = true;
+            log.debug("Got restrict flag, so matching regex");
+          }
+        }        
         new XmlormuploadMain().run();
     }
     
@@ -111,7 +125,16 @@ public class XmlormuploadMain {
         
         while(iter.hasNext()) {
           File file = (File) iter.next();
-          exec.execute(new Xmlormuploader(file, config, gcl, sf));
+          String filePath = "";
+          try {
+            filePath = file.getCanonicalPath();
+            log.debug("Canonical path being processed is: " + filePath);
+          } catch (IOException ioe) {
+            log.warn("Unable to get canonical path from file", ioe);
+          }          
+          if ((!matchRegex) || (matchRegex && filePath.matches(matchRegexStr))) {
+            exec.execute(new Xmlormuploader(file, config, gcl, sf));
+          }
         }
         
         exec.shutdown();
