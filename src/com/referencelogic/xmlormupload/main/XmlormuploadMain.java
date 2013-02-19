@@ -121,7 +121,12 @@ public class XmlormuploadMain {
         
         Configuration hibernateConfig = new Configuration();
         
-        SessionFactory sf = hibernateConfig.configure(new File("hibernate.config.xml")).buildSessionFactory();        
+        SessionFactory sf;
+        if (!matchRegex) {
+          sf = hibernateConfig.configure(new File("hibernate.config.xml")).buildSessionFactory();
+        } else {
+          sf = hibernateConfig.configure(new File("hibernate.update.config.xml")).buildSessionFactory();
+        }
 
         log.info("Opened session");
         
